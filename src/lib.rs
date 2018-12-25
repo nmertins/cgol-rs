@@ -1,7 +1,6 @@
 extern crate csv;
 
-use std::io::Error;
-use csv::{Reader, ReaderBuilder};
+use csv::ReaderBuilder;
 
 struct GameOfLife {
     iterations: u32,
@@ -24,17 +23,14 @@ struct GameState {
 }
 
 impl GameState {
-    fn from_file<'a>(file_path: &str) -> Result<GameState, &'a str> {
-        let rdr_result = ReaderBuilder::new().from_path(file_path);
-        if let Ok(mut rdr) = rdr_result {
-            for record_result in rdr.records() {
-                if let Ok(record) = record_result {
-                    println!("{:?}", record);
-                }
-            }
+    fn from_file(file_path: &str) -> Result<GameState, csv::Error> {
+        let mut rdr = ReaderBuilder::new().from_path(file_path)?;
+        for result in rdr.records() {
+            let record = result?;
+            println!("{:?}", record);
         }
 
-        Err("Error parsing .state file.")
+        Ok(GameState{})
     }
 }
 
