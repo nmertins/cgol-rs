@@ -1,4 +1,6 @@
-use std::{fs, io};
+use std::fs::File;
+use std::io::prelude::*;
+use std::io::{Error, ErrorKind};
 
 struct GameOfLife {
     iterations: u32,
@@ -21,12 +23,19 @@ struct GameState {
 }
 
 impl GameState {
-    fn from_file(file_path: &str) -> Result<GameState, io::Error> {
-        let contents = fs::read_to_string(file_path)?;
+    fn from_file(file_path: &str) -> std::io::Result<GameState> {
+        let mut file = File::open(file_path)?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
 
-        println!("{}", contents);
+        let lines :Vec<&str> = contents.split('\n').collect();
 
-        Ok(GameState{})
+        if lines.len() == 2 {
+            return Ok(GameState{});
+        }
+
+
+        Err(Error::new(ErrorKind::InvalidInput, "Invalid state file format"))
     }
 }
 
