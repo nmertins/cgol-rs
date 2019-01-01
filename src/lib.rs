@@ -45,12 +45,9 @@ impl GameState {
 
         if lines.len() > 1 {
             let dimensions_str: Vec<&str> = lines.get(0).unwrap().split(',').collect();
-            let (x, y) = (
-                usize::from_str(dimensions_str[0])?,
-                usize::from_str(dimensions_str[1])?
-            );
+            let x = usize::from_str(dimensions_str[0])?;
 
-            return Ok(GameState{state: vec![vec![0u8; x]; y]});
+            return Ok(GameState{state: vec![vec![0u8; x]; x]});
         }
 
         Err(GameError::InvalidStateFile)
