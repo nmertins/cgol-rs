@@ -19,7 +19,7 @@ impl GameOfLife {
 }
 
 struct GameState {
-
+    state: Vec<Vec<u8>>,
 }
 
 enum GameError {
@@ -39,10 +39,10 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
 }
 
 impl GameState {
-    fn from_file(file_path: &str) -> Result<GameState, GameError> {
+    pub fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
-
         let lines: Vec<&str> = contents.split('\n').collect();
+
         if lines.len() > 1 {
             let dimensions_str: Vec<&str> = lines.get(0).unwrap().split(',').collect();
             let dimensions_num: (u32, u32) = (
@@ -50,7 +50,7 @@ impl GameState {
                 u32::from_str(dimensions_str[1])?
             );
 
-            return Ok(GameState{});
+            return Ok(GameState{state: vec![vec![0u8]]});
         }
 
         Err(GameError::InvalidStateFile)
