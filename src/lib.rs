@@ -1,6 +1,4 @@
-extern crate csv;
-
-use csv::ReaderBuilder;
+use std::{fs, io};
 
 struct GameOfLife {
     iterations: u32,
@@ -23,12 +21,10 @@ struct GameState {
 }
 
 impl GameState {
-    fn from_file(file_path: &str) -> Result<GameState, csv::Error> {
-        let mut rdr = ReaderBuilder::new().from_path(file_path)?;
-        for result in rdr.records() {
-            let record = result?;
-            println!("{:?}", record);
-        }
+    fn from_file(file_path: &str) -> Result<GameState, io::Error> {
+        let contents = fs::read_to_string(file_path)?;
+
+        println!("{}", contents);
 
         Ok(GameState{})
     }
