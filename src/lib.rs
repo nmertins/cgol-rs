@@ -83,7 +83,10 @@ mod tests {
             Err(error) => assert!(false, "Shouldn't get here")
         }
 
-        let invalid_state_result = GameState::from_file("resources/empty_file.state");
+        let invalid_state_result = GameState::from_file("resources/invalid_dimensions.state");
         assert!(invalid_state_result.is_err());
+
+        let empty_state_result = GameState::from_file("resources/empty_file.state");
+        assert!(empty_state_result.is_err());
     }
 }
