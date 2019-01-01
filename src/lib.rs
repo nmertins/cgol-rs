@@ -1,6 +1,6 @@
-use std::fs::File;
-use std::io::prelude::*;
-use std::io::{Error, ErrorKind};
+use std::fs;
+use std::io;
+use std::str::FromStr;
 
 struct GameOfLife {
     iterations: u32,
@@ -22,20 +22,38 @@ struct GameState {
 
 }
 
+enum GameError {
+    InvalidStateFile
+}
+
+impl std::convert::From<io::Error> for GameError {
+    fn from(_: io::Error) -> GameError {
+        GameError::InvalidStateFile
+    }
+}
+
+impl std::convert::From<std::num::ParseIntError> for GameError {
+    fn from(_: std::num::ParseIntError) -> GameError {
+        GameError::InvalidStateFile
+    }
+}
+
 impl GameState {
-    fn from_file(file_path: &str) -> std::io::Result<GameState> {
-        let mut file = File::open(file_path)?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
+    fn from_file(file_path: &str) -> Result<GameState, GameError> {
+        let contents = fs::read_to_string(file_path)?;
 
-        let lines :Vec<&str> = contents.split('\n').collect();
+        let lines: Vec<&str> = contents.split('\n').collect();
+        if lines.len() > 1 {
+            let dimensions_str: Vec<&str> = lines.get(0).unwrap().split(',').collect();
+            let dimensions_num: (u32, u32) = (
+                u32::from_str(dimensions_str[0])?,
+                u32::from_str(dimensions_str[1])?
+            );
 
-        if lines.len() == 2 {
             return Ok(GameState{});
         }
 
-
-        Err(Error::new(ErrorKind::InvalidInput, "Invalid state file format"))
+        Err(GameError::InvalidStateFile)
     }
 }
 
