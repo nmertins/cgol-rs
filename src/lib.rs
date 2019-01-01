@@ -75,7 +75,8 @@ mod tests {
                 assert_eq!(valid_state.state.len(), 3);
                 match valid_state.state.get(0) {
                     Some(row) => {
-                        assert_eq!(row.len(), 3)
+                        assert_eq!(row.len(), 3);
+                        assert_eq!(Some(&1), row.get(0));
                     },
                     None => assert!(false, "Shouldn't ger here")
                 }
