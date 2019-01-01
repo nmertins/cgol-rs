@@ -73,10 +73,17 @@ mod tests {
     #[test]
     fn test_state_file_format() {
         let valid_state_result = GameState::from_file("resources/valid_test.state");
-        assert!(valid_state_result.is_ok());
-
-        if let Ok(valid_state) = valid_state_result {
-            assert_eq!(valid_state.state.len(), 1);
+        match valid_state_result {
+            Ok(valid_state) => {
+                assert_eq!(valid_state.state.len(), 3);
+                match valid_state.state.get(0) {
+                    Some(row) => {
+                        assert_eq!(row.len(), 3)
+                    },
+                    None => assert!(false, "Shouldn't ger here")
+                }
+            },
+            Err(error) => assert!(false, "Shouldn't get here")
         }
 
         let invalid_state_result = GameState::from_file("resources/empty_file.state");
