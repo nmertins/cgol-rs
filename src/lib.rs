@@ -44,8 +44,25 @@ impl GameState {
         let lines: Vec<&str> = contents.split('\n').collect();
 
         if lines.len() > 1 {
-            let dimensions_str: Vec<&str> = lines.get(0).unwrap().split(',').collect();
-            let x = usize::from_str(dimensions_str[0])?;
+            let dimensions_str: &str = lines.get(0).unwrap();
+            let x = usize::from_str(dimensions_str)?;
+
+            let mut state: Vec<Vec<u8>> = Vec::new();
+
+            for i in 1..=x {
+                let line_opt = lines.get(i);
+                match line_opt {
+                    Some(row) => {
+                        let line: Vec<&str> = row.split(',').collect();
+                        let line: Vec<Result<u8, std::num::ParseIntError>> = line.iter()
+                                                                                 .map(|s| u8::from_str(s))
+                                                                                 .collect();
+
+//                        state.push(line);
+                    },
+                    None => return Err(GameError::InvalidStateFile),
+                }
+            }
 
             return Ok(GameState{state: vec![vec![0u8; x]; x]});
         }
