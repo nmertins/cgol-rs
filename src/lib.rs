@@ -41,30 +41,26 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
 impl GameState {
     pub fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
-        let lines: Vec<&str> = contents.split('\n').collect();
+        let mut lines: Vec<&str> = contents.split('\n').collect();
 
         if lines.len() > 1 {
-            let dimensions_str: &str = lines.get(0).unwrap();
+            let dimensions_str: &str = lines.pop().unwrap();
             let x = usize::from_str(dimensions_str)?;
 
             let mut state: Vec<Vec<u8>> = Vec::new();
 
-            for i in 1..=x {
-                let line_opt = lines.get(i);
-                match line_opt {
-                    Some(row) => {
-                        let line: Vec<&str> = row.split(',').collect();
-                        let line: Vec<Result<u8, std::num::ParseIntError>> = line.iter()
-                                                                                 .map(|s| u8::from_str(s))
-                                                                                 .collect();
-
-//                        state.push(line);
-                    },
-                    None => return Err(GameError::InvalidStateFile),
+            for line in lines {
+                let values_str: Vec<&str> = line.split(',').collect();
+                let str_to_u8_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter().map(|s| u8::from_str(s)).collect();
+                let mut values_u8 = Vec::new();
+                for result in str_to_u8_results {
+                    let value = result?;
+                    values_u8.push(value);
                 }
+                state.push(values_u8);
             }
 
-            return Ok(GameState{state: vec![vec![0u8; x]; x]});
+            return Ok(GameState{state});
         }
 
         Err(GameError::InvalidStateFile)
