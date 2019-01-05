@@ -23,18 +23,18 @@ struct GameState {
 }
 
 enum GameError {
-    InvalidStateFile
+    InvalidStateFile(String)
 }
 
 impl std::convert::From<io::Error> for GameError {
-    fn from(_: io::Error) -> GameError {
-        GameError::InvalidStateFile
+    fn from(e: io::Error) -> GameError {
+        GameError::InvalidStateFile(e.to_string())
     }
 }
 
 impl std::convert::From<std::num::ParseIntError> for GameError {
-    fn from(_: std::num::ParseIntError) -> GameError {
-        GameError::InvalidStateFile
+    fn from(e: std::num::ParseIntError) -> GameError {
+        GameError::InvalidStateFile(e.to_string())
     }
 }
 
@@ -63,7 +63,7 @@ impl GameState {
             return Ok(GameState{state});
         }
 
-        Err(GameError::InvalidStateFile)
+        Err(GameError::InvalidStateFile(String::from("Empty state file")))
     }
 }
 
@@ -94,7 +94,12 @@ mod tests {
                     None => assert!(false, "state field for valid_state is None. Expected a 3x3 state.")
                 }
             },
-            Err(error) => assert!(false, "Error reading state file resources/valid_test.state")
+            Err(error) => {
+                match error {
+                    GameError::InvalidStateFile(message) => assert!(false, format!("Error reading state file resources/valid_test.state: {}", message))
+                }
+
+            }
         }
 
         let invalid_state_result = GameState::from_file("resources/invalid_dimensions.state");
