@@ -91,10 +91,10 @@ mod tests {
                         assert_eq!(row.len(), 3);
                         assert_eq!(Some(&1), row.get(0));
                     },
-                    None => assert!(false, "Shouldn't ger here")
+                    None => assert!(false, "state field for valid_state is None. Expected a 3x3 state.")
                 }
             },
-            Err(error) => assert!(false, "Shouldn't get here")
+            Err(error) => assert!(false, "Error reading state file resources/valid_test.state")
         }
 
         let invalid_state_result = GameState::from_file("resources/invalid_dimensions.state");
