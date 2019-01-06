@@ -4,17 +4,25 @@ use std::str::FromStr;
 
 pub struct GameOfLife {
     iterations: u32,
+    game_state: Option<GameState>,
 }
 
 impl GameOfLife {
     pub fn new() -> GameOfLife {
         GameOfLife {
-            iterations: 0
+            iterations: 0,
+            game_state: None,
         }
     }
 
     pub fn current_iteration(&self) -> u32 {
         self.iterations
+    }
+
+    pub fn set_state(&mut self, file_path: &str) -> Result<(), GameError> {
+        let state = GameState::from_file(file_path)?;
+        self.game_state = Some(state);
+        Result::Ok(())
     }
 
     pub fn update(&mut self) {
@@ -26,7 +34,7 @@ struct GameState {
     state: Vec<Vec<u8>>,
 }
 
-enum GameError {
+pub enum GameError {
     InvalidStateFile(String)
 }
 

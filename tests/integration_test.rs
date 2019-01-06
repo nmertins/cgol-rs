@@ -9,7 +9,7 @@ fn test_create_game() {
      * an instance of the GameOfLife object. This type handles the state
      * and rules of a single Game of Life.
      */
-    let gol = GameOfLife::new();
+    let mut gol = GameOfLife::new();
 
     /**
      * Nathan can verify this is in fact a fresh Game instance by checking the
