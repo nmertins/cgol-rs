@@ -1,4 +1,6 @@
-use cgol;
+extern crate cgol;
+
+use cgol::GameOfLife;
 
 #[test]
 fn test_create_game() {
@@ -13,7 +15,7 @@ fn test_create_game() {
      * Nathan can verify this is in fact a fresh Game instance by checking the
      * number of iterations that have already been run.
      */
-    assert_eq!(gol.iterations, 0);
+    assert_eq!(gol.current_iteration(), 0);
 
     /**
      * Running the game isn't very exciting without seeding the initial

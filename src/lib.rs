@@ -2,7 +2,7 @@ use std::fs;
 use std::io;
 use std::str::FromStr;
 
-struct GameOfLife {
+pub struct GameOfLife {
     iterations: u32,
 }
 
@@ -13,7 +13,11 @@ impl GameOfLife {
         }
     }
 
-    fn update(&mut self) {
+    pub fn current_iteration(&self) -> u32 {
+        self.iterations
+    }
+
+    pub fn update(&mut self) {
         self.iterations += 1;
     }
 }
