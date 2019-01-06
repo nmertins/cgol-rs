@@ -51,7 +51,7 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
 }
 
 impl GameState {
-    pub fn from_file(file_path: &str) -> Result<GameState, GameError> {
+    fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
         let lines: Vec<&str> = contents.split('\n').collect();
 
