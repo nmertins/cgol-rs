@@ -43,10 +43,7 @@ impl GameState {
         let contents = fs::read_to_string(file_path)?;
         let mut lines: Vec<&str> = contents.split('\n').collect();
 
-        if lines.len() > 1 {
-            let dimensions_str: &str = lines.pop().unwrap();
-            let x = usize::from_str(dimensions_str)?;
-
+        if lines.len() > 0 {
             let mut state: Vec<Vec<u8>> = Vec::new();
 
             for line in lines {
