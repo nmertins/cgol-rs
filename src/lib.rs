@@ -106,5 +106,8 @@ mod tests {
 
         let empty_state_result = GameState::from_file("resources/empty_file.state");
         assert!(empty_state_result.is_err());
+
+        let not_square_state_result = GameState::from_file("resources/not_square.state");
+        assert!(not_square_state_result.is_err());
     }
 }
