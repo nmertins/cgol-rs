@@ -1,5 +1,5 @@
 [package]
-name = "cgol-rs"
+name = "cgol"
 version = "0.1.0"
 authors = ["Nathan Mertins <nwmertins@gmail.com>"]
 
