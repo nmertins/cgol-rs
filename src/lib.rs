@@ -41,13 +41,18 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
 impl GameState {
     pub fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
-        let mut lines: Vec<&str> = contents.split('\n').collect();
+        let lines: Vec<&str> = contents.split('\n').collect();
 
-        if lines.len() > 0 {
+        let y = lines.len();
+        if y > 0 {
             let mut state: Vec<Vec<u8>> = Vec::new();
 
             for line in lines {
                 let values_str: Vec<&str> = line.split(',').collect();
+                let x = values_str.len();
+                if x != y {
+                    return Err(GameError::InvalidStateFile(String::from("Dimensions not square.")))
+                }
                 let u8_from_str_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter()
                                                                                               .map(|s| u8::from_str(s))
                                                                                               .collect();
