@@ -51,9 +51,11 @@ impl GameState {
 
             for line in lines {
                 let values_str: Vec<&str> = line.split(',').collect();
-                let str_to_u8_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter().map(|s| u8::from_str(s)).collect();
+                let u8_from_str_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter()
+                                                                                              .map(|s| u8::from_str(s))
+                                                                                              .collect();
                 let mut values_u8 = Vec::new();
-                for result in str_to_u8_results {
+                for result in u8_from_str_results {
                     let value = result?;
                     values_u8.push(value);
                 }
