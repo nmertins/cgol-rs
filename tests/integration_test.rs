@@ -1,6 +1,6 @@
 extern crate cgol;
 
-use cgol::GameOfLife;
+use cgol::{GameOfLife, GameState, GameError};
 
 #[test]
 fn test_create_game() {
@@ -21,7 +21,8 @@ fn test_create_game() {
      * Running the game isn't very exciting without seeding the initial
      * state. This is done with a special .state file.
      */
-    gol.set_state("resources/gol_initial.state");
+    let set_result: Result<_, GameError> = gol.set_state("resources/gol_initial.state");
+    assert!(set_result.is_ok());
 
     /**
      * Calling update on the GameOfLife object causes the simulation to run
@@ -29,5 +30,7 @@ fn test_create_game() {
      * according to the (rules)[https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life].
      */
     gol.update();
+    let current_state_result: Result<GameState, GameError> = gol.get_state();
+    assert!(current_state_result.is_ok());
 }
 

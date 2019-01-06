@@ -30,7 +30,7 @@ impl GameOfLife {
     }
 }
 
-struct GameState {
+pub struct GameState {
     state: Vec<Vec<u8>>,
 }
 
