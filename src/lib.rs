@@ -25,6 +25,10 @@ impl GameOfLife {
         Result::Ok(())
     }
 
+    pub fn get_state(&self) -> Result<GameState, GameError> {
+        Err(GameError::EmptyGameState)
+    }
+
     pub fn update(&mut self) {
         self.iterations += 1;
     }
@@ -35,7 +39,8 @@ pub struct GameState {
 }
 
 pub enum GameError {
-    InvalidStateFile(String)
+    InvalidStateFile(String),
+    EmptyGameState
 }
 
 impl std::convert::From<io::Error> for GameError {
@@ -112,7 +117,8 @@ mod tests {
             },
             Err(error) => {
                 match error {
-                    GameError::InvalidStateFile(message) => assert!(false, format!("Error reading state file resources/valid_test.state: {}", message))
+                    GameError::InvalidStateFile(message) => assert!(false, format!("Error reading state file resources/valid_test.state: {}", message)),
+                    _ => assert!(false, "Why is GameState::from_file returning an error besides InvalidStateFile error??")
                 }
 
             }
