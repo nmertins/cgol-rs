@@ -30,7 +30,7 @@ fn test_create_game() {
      * according to the (rules)[https://en.wikipedia.org/wiki/Conway%27s_Game_of_Life].
      */
     gol.update();
-    let current_state_result: Result<GameState, GameError> = gol.get_state();
+    let current_state_result = gol.get_state();
     assert!(current_state_result.is_ok());
 }
 

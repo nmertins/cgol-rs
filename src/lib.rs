@@ -25,8 +25,11 @@ impl GameOfLife {
         Result::Ok(())
     }
 
-    pub fn get_state(&self) -> Result<GameState, GameError> {
-        Err(GameError::EmptyGameState)
+    pub fn get_state(&self) -> Result<&GameState, GameError> {
+        match &self.game_state {
+            Some(state) => return Ok(state),
+            None => return Err(GameError::EmptyGameState)
+        }
     }
 
     pub fn update(&mut self) {
