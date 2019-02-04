@@ -37,10 +37,6 @@ impl GameOfLife {
     }
 }
 
-pub struct GameState {
-    state: Vec<Vec<u8>>,
-}
-
 pub enum GameError {
     InvalidStateFile(String),
     EmptyGameState
@@ -56,6 +52,10 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
     fn from(e: std::num::ParseIntError) -> GameError {
         GameError::InvalidStateFile(e.to_string())
     }
+}
+
+pub struct GameState {
+    state: Vec<Vec<u8>>,
 }
 
 impl GameState {
