@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn test_state_file_format() {
-        let valid_state_result = GameState::from_file("resources/valid_test.state");
+        let valid_state_result = GameState::from_file("resources/test_states/valid_test.state");
         match valid_state_result {
             Ok(valid_state) => {
                 assert_eq!(valid_state.state.len(), 3);
@@ -127,13 +127,13 @@ mod tests {
             }
         }
 
-        let invalid_state_result = GameState::from_file("resources/invalid_dimensions.state");
+        let invalid_state_result = GameState::from_file("resources/test_states/invalid_dimensions.state");
         assert!(invalid_state_result.is_err());
 
-        let empty_state_result = GameState::from_file("resources/empty_file.state");
+        let empty_state_result = GameState::from_file("resources/test_states/empty_file.state");
         assert!(empty_state_result.is_err());
 
-        let not_square_state_result = GameState::from_file("resources/not_square.state");
+        let not_square_state_result = GameState::from_file("resources/test_states/not_square.state");
         assert!(not_square_state_result.is_err());
     }
 }
