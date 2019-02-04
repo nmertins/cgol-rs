@@ -54,6 +54,15 @@ impl std::convert::From<std::num::ParseIntError> for GameError {
     }
 }
 
+impl std::fmt::Debug for GameError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            GameError::InvalidStateFile(message) => write!(f, "InvalidStateFile error: {}", message),
+            GameError::EmptyGameState => write!(f, "EmptyGameState error")
+        }
+    }
+}
+
 pub struct GameState {
     state: Vec<Vec<u8>>,
 }
@@ -95,6 +104,12 @@ impl GameState {
 mod tests {
     use super::*;
 
+    macro_rules! assert_dead {
+        ($state_file:ident, $coord_tuple:ident) => (
+
+        )
+    }
+
     #[test]
     fn test_update_increments_iterations() {
         let mut gol = GameOfLife::new();
@@ -135,5 +150,15 @@ mod tests {
 
         let not_square_state_result = GameState::from_file("resources/test_states/not_square.state");
         assert!(not_square_state_result.is_err());
+    }
+
+    #[test]
+    fn test_single_live_cell_dies() {
+        let mut gol = GameOfLife::new();
+        gol.set_state("resources/test/single_live_cell.state");
+        gol.update();
+        let state = gol.get_state().unwrap();
+        let dead_cell = (1,1);
+        assert_dead!(state, dead_cell);
     }
 }
