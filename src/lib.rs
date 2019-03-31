@@ -20,7 +20,7 @@ impl GameOfLife {
     }
 
     pub fn set_state(&mut self, file_path: &str) -> Result<(), GameError> {
-        let state = GameState::from_file(file_path)?;
+        let state = GameStateBuilder::from_file(file_path)?;
         self.game_state = Some(state);
         Result::Ok(())
     }
@@ -67,7 +67,9 @@ pub struct GameState {
     state: Vec<Vec<u8>>,
 }
 
-impl GameState {
+struct GameStateBuilder;
+
+impl GameStateBuilder {
     fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
         let lines: Vec<&str> = contents.split('\n').collect();
@@ -76,11 +78,13 @@ impl GameState {
         if lines.len() > 0 {
             let mut state: Vec<Vec<u8>> = Vec::new();
 
-            let (x, y) = GameState::parse_coordinate(lines[0])?;
+            let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
 
             for i in 1..lines.len() {
-                let (live_cell_x, live_cell_y) = GameState::parse_coordinate(lines[i])?;
-                if live_cell_x < 0 || live_cell_y < 0 { return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", live_cell_x, live_cell_y)))) }
+                let (live_cell_x, live_cell_y) = GameStateBuilder::parse_coordinate(lines[i])?;
+                if live_cell_x < 0 || live_cell_y < 0 {
+                    return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", live_cell_x, live_cell_y))));
+                }
             }
 
             // for line in lines {
@@ -137,7 +141,7 @@ mod tests {
 
     #[test]
     fn test_state_file_format() {
-        let valid_state_result = GameState::from_file("resources/test_states/valid_test.state");
+        let valid_state_result = GameStateBuilder::from_file("resources/test_states/valid_test.state");
         match valid_state_result {
             Ok(valid_state) => {
                 assert_eq!(valid_state.state.len(), 3);
@@ -158,13 +162,13 @@ mod tests {
             }
         }
 
-        let invalid_state_result = GameState::from_file("resources/test_states/invalid_dimensions.state");
+        let invalid_state_result = GameStateBuilder::from_file("resources/test_states/invalid_dimensions.state");
         assert!(invalid_state_result.is_err());
 
-        let empty_state_result = GameState::from_file("resources/test_states/empty_file.state");
+        let empty_state_result = GameStateBuilder::from_file("resources/test_states/empty_file.state");
         assert!(empty_state_result.is_err());
 
-        let not_square_state_result = GameState::from_file("resources/test_states/not_square.state");
+        let not_square_state_result = GameStateBuilder::from_file("resources/test_states/not_square.state");
         assert!(not_square_state_result.is_err());
     }
 
