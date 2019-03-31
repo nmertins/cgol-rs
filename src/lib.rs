@@ -70,7 +70,7 @@ pub struct GameState {
 impl GameState {
     pub fn set_live(&mut self, x: u8, y: u8) -> Result<(), GameError> {
         if self.coord_in_world(x, y) {
-            self.state[y as usize][x as usize] = true;
+            self.state[x as usize][y as usize] = true;
         }
         else {
             // return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", x, y))));
@@ -78,6 +78,17 @@ impl GameState {
         }
 
         return Ok(());
+    }
+
+    pub fn get_dimensions(&self) -> (usize, usize) {
+        let world_x = self.state[0].len();
+        let world_y = self.state.len();
+
+        (world_x, world_y)
+    }
+
+    pub fn get_cell_state(&self, x: u8, y: u8) -> bool {
+        self.state[x as usize][y as usize]
     }
 
     fn coord_in_world(&self, x: u8, y: u8) -> bool {
@@ -98,7 +109,7 @@ impl GameStateBuilder {
         let y = lines.len();
         if lines.len() > 0 {
             let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
-            let state: Vec<Vec<bool>> = vec![vec![false; x as usize]; y as usize];
+            let state: Vec<Vec<bool>> = vec![vec![false; y as usize]; x as usize];
             let mut game_state = GameState { state };
 
             for i in 1..lines.len() {
@@ -126,12 +137,6 @@ impl GameStateBuilder {
 mod tests {
     use super::*;
 
-    macro_rules! assert_dead {
-        ($state_file:ident, $coord_tuple:ident) => (
-
-        )
-    }
-
     #[test]
     fn test_update_increments_iterations() {
         let mut gol = GameOfLife::new();
@@ -146,14 +151,10 @@ mod tests {
         let valid_state_result = GameStateBuilder::from_file("resources/test_states/valid_test.state");
         match valid_state_result {
             Ok(valid_state) => {
-                assert_eq!(valid_state.state.len(), 3);
-                match valid_state.state.get(0) {
-                    Some(row) => {
-                        assert_eq!(row.len(), 3);
-                        assert_eq!(Some(&1), row.get(0));
-                    },
-                    None => assert!(false, "state field for valid_state is None. Expected a 3x3 state.")
-                }
+                let (x, y) = valid_state.get_dimensions();
+                assert_eq!(x, 3);
+                assert_eq!(y, 3);
+                assert!(valid_state.get_cell_state(1, 1));
             },
             Err(error) => {
                 match error {
@@ -180,7 +181,6 @@ mod tests {
         gol.set_state("resources/test/single_live_cell.state");
         gol.update();
         let state = gol.get_state().unwrap();
-        let dead_cell = (1,1);
-        assert_dead!(state, dead_cell);
+        assert!(!state.get_cell_state(1, 1));
     }
 }
