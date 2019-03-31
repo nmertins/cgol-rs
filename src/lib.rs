@@ -73,30 +73,46 @@ impl GameState {
         let lines: Vec<&str> = contents.split('\n').collect();
 
         let y = lines.len();
-        if y > 0 {
+        if lines.len() > 0 {
             let mut state: Vec<Vec<u8>> = Vec::new();
 
-            for line in lines {
-                let values_str: Vec<&str> = line.split(',').collect();
-                let x = values_str.len();
-                if x != y {
-                    return Err(GameError::InvalidStateFile(String::from("Dimensions not square.")))
-                }
-                let u8_from_str_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter()
-                                                                                              .map(|s| u8::from_str(s))
-                                                                                              .collect();
-                let mut values_u8 = Vec::new();
-                for result in u8_from_str_results {
-                    let value = result?;
-                    values_u8.push(value);
-                }
-                state.push(values_u8);
+            let (x, y) = GameState::parse_coordinate(lines[0])?;
+
+            for i in 1..lines.len() {
+                let (live_cell_x, live_cell_y) = GameState::parse_coordinate(lines[i])?;
+                if live_cell_x < 0 || live_cell_y < 0 { return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", live_cell_x, live_cell_y)))) }
             }
+
+            // for line in lines {
+            //     let values_str: Vec<&str> = line.split(',').collect();
+            //     let x = values_str.len();
+            //     if x != y {
+            //         return Err(GameError::InvalidStateFile(String::from("Dimensions not square.")))
+            //     }
+            //     let u8_from_str_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter()
+            //                                                                                   .map(|s| u8::from_str(s))
+            //                                                                                   .collect();
+            //     let mut values_u8 = Vec::new();
+            //     for result in u8_from_str_results {
+            //         let value = result?;
+            //         values_u8.push(value);
+            //     }
+            //     state.push(values_u8);
+            // }
 
             return Ok(GameState{state});
         }
 
         Err(GameError::InvalidStateFile(String::from("Empty state file")))
+    }
+
+    fn parse_coordinate(coord_str: &str) -> Result<(u8, u8), GameError> {
+        let dimensions: Vec<&str> = coord_str.split(',').collect();
+        if dimensions.len() != 2 { return Err(GameError::InvalidStateFile(String::from("Failed to parse dimensions."))) }
+        let x = u8::from_str(dimensions[0])?;
+        let y = u8::from_str(dimensions[1])?;
+
+        Ok((x, y))
     }
 }
 
