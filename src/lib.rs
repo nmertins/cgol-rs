@@ -95,7 +95,7 @@ impl GameState {
         let world_x = self.state[0].len();
         let world_y = self.state.len();
 
-        return x >= world_x as u8 || y >= world_y as u8;
+        return x < world_x as u8 && y < world_y as u8;
     }
 }
 
@@ -106,7 +106,6 @@ impl GameStateBuilder {
         let contents = fs::read_to_string(file_path)?;
         let lines: Vec<&str> = contents.split('\n').collect();
 
-        let y = lines.len();
         if lines.len() > 0 {
             let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
             let state: Vec<Vec<bool>> = vec![vec![false; y as usize]; x as usize];
