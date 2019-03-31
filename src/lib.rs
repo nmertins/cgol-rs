@@ -188,7 +188,9 @@ mod tests {
     #[test]
     fn test_single_live_cell_dies() {
         let mut gol = GameOfLife::new();
-        gol.set_state("resources/test_states/single_live_cell.state");
+        if let Err(game_error) = gol.set_state("resources/test_states/single_live_cell.state") {
+            panic!("resources/test_states/single_live_cell.state should be a valid state");
+        }
         {
             let state = gol.get_state().unwrap();
             assert!(state.get_cell_state(1, 1));
