@@ -188,9 +188,15 @@ mod tests {
     #[test]
     fn test_single_live_cell_dies() {
         let mut gol = GameOfLife::new();
-        gol.set_state("resources/test/single_live_cell.state");
+        gol.set_state("resources/test_states/single_live_cell.state");
+        {
+            let state = gol.get_state().unwrap();
+            assert!(state.get_cell_state(1, 1));
+        }
         gol.update();
-        let state = gol.get_state().unwrap();
-        assert!(!state.get_cell_state(1, 1));
+        {
+            let state = gol.get_state().unwrap();
+            assert!(!state.get_cell_state(1, 1));
+        }
     }
 }
