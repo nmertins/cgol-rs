@@ -151,10 +151,21 @@ mod tests {
         let valid_state_result = GameStateBuilder::from_file("resources/test_states/valid_test.state");
         match valid_state_result {
             Ok(valid_state) => {
-                let (x, y) = valid_state.get_dimensions();
-                assert_eq!(x, 3);
-                assert_eq!(y, 3);
-                assert!(valid_state.get_cell_state(1, 1));
+                let size = valid_state.get_dimensions();
+                assert_eq!(size, (3, 3));
+                
+                // live cells
+                assert!(valid_state.get_cell_state(0, 0));
+
+                // dead cells
+                assert!(!valid_state.get_cell_state(1, 0));
+                assert!(!valid_state.get_cell_state(2, 0));
+                assert!(!valid_state.get_cell_state(0, 1));
+                assert!(!valid_state.get_cell_state(1, 1));
+                assert!(!valid_state.get_cell_state(2, 1));
+                assert!(!valid_state.get_cell_state(0, 2));
+                assert!(!valid_state.get_cell_state(1, 2));
+                assert!(!valid_state.get_cell_state(2, 2));
             },
             Err(error) => {
                 match error {
