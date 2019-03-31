@@ -89,23 +89,6 @@ impl GameStateBuilder {
                 state.push((x, y));
             }
 
-            // for line in lines {
-            //     let values_str: Vec<&str> = line.split(',').collect();
-            //     let x = values_str.len();
-            //     if x != y {
-            //         return Err(GameError::InvalidStateFile(String::from("Dimensions not square.")))
-            //     }
-            //     let u8_from_str_results: Vec<Result<u8, std::num::ParseIntError>> = values_str.iter()
-            //                                                                                   .map(|s| u8::from_str(s))
-            //                                                                                   .collect();
-            //     let mut values_u8 = Vec::new();
-            //     for result in u8_from_str_results {
-            //         let value = result?;
-            //         values_u8.push(value);
-            //     }
-            //     state.push(values_u8);
-            // }
-
             return Ok(GameState{state});
         }
 
