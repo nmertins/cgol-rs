@@ -64,7 +64,28 @@ impl std::fmt::Debug for GameError {
 }
 
 pub struct GameState {
-    state: Vec<(u8, u8)>,
+    state: Vec<Vec<bool>>,
+}
+
+impl GameState {
+    pub fn set_live(&mut self, x: u8, y: u8) -> Result<(), GameError> {
+        if self.coord_in_world(x, y) {
+            self.state[y as usize][x as usize] = true;
+        }
+        else {
+            // return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", x, y))));
+            // just ignore cells outside the world
+        }
+
+        return Ok(());
+    }
+
+    fn coord_in_world(&self, x: u8, y: u8) -> bool {
+        let world_x = self.state[0].len();
+        let world_y = self.state.len();
+
+        return x >= world_x as u8 || y >= world_y as u8;
+    }
 }
 
 struct GameStateBuilder;
@@ -76,20 +97,16 @@ impl GameStateBuilder {
 
         let y = lines.len();
         if lines.len() > 0 {
-            let mut state: Vec<(u8, u8)> = Vec::new();
-
             let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
+            let state: Vec<Vec<bool>> = vec![vec![false; x as usize]; y as usize];
+            let mut game_state = GameState { state };
 
             for i in 1..lines.len() {
                 let (live_cell_x, live_cell_y) = GameStateBuilder::parse_coordinate(lines[i])?;
-                if live_cell_x < 0 || live_cell_y < 0 || live_cell_x >= x || live_cell_y >= y {
-                    return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", live_cell_x, live_cell_y))));
-                }
-                
-                state.push((x, y));
+                game_state.set_live(live_cell_x, live_cell_y)?;
             }
 
-            return Ok(GameState{state});
+            return Ok(game_state);
         }
 
         Err(GameError::InvalidStateFile(String::from("Empty state file")))
