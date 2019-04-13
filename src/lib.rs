@@ -338,4 +338,26 @@ mod tests {
             assert!(!state.get_cell_state(1, 1));
         }
     }
+
+    #[test]
+    fn test_cell_with_two_neighbors_lives() {
+        let mut gol = GameOfLife::new();
+
+        if let Err(game_error) = gol.set_state("resources/test_states/cell_with_two_neighbors.state") {
+            panic!("resources/test_states/cell_with_two_neighbors.state should be a valid state");
+        }
+        {
+            let state = gol.get_state().unwrap();
+            assert!(state.get_cell_state(0,0));
+            assert!(state.get_cell_state(1,0));
+            assert!(state.get_cell_state(1,1));
+        }
+        gol.update();
+        {
+            let state = gol.get_state().unwrap();
+            assert!(!state.get_cell_state(0,0));
+            assert!(!state.get_cell_state(1,0));
+            assert!(state.get_cell_state(1,1));
+        }
+    }
 }
