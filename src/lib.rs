@@ -34,6 +34,143 @@ impl GameOfLife {
 
     pub fn update(&mut self) {
         self.iterations += 1;
+
+        // Rules:
+        // 1. Any live cell with fewer than 2 neighbors dies, as if by underpopulation
+        // 2. Any live cell with 2 or 3 live neighbors lives on to the next generation
+        // 3. Any live cell with more than 3 neighbors dies, as if by overpopulation
+        // 4. Any dead cell with exactly 3 live neighbors becomes a live cell, as if by reproduction
+
+        let mut next_state_opt: Option<GameState> = None;
+
+        if let Some(state) = &self.game_state {
+            self.iterations += 1;
+
+            let world_dimensions = state.get_dimensions();
+            let mut next_state = GameState{
+                state: vec![vec![false; world_dimensions.1]; world_dimensions.0]
+            };
+
+            for i in 0..state.state.len() {
+                for j in 0..state.state[i].len() {
+                    let live_neighbors = self.get_number_of_live_neighbors(i, j);
+
+                    if state.get_cell_state(i, j) {
+                        if live_neighbors < 2 || live_neighbors > 3 {
+                            next_state.set_cell_state(i, j, false);
+                        }
+                    } else if live_neighbors == 3 {
+                        next_state.set_cell_state(i, j, true);
+                    }
+                }
+            }
+
+            next_state_opt = Some(next_state);
+        }
+
+        self.game_state = next_state_opt;
+    }
+
+    fn get_number_of_live_neighbors(&self, x: usize, y: usize) -> i32 {
+        let mut live_neighbors = 0;
+
+        if let Some(game_state) = &self.game_state {
+            let mut neighbors = Vec::new();
+
+            let world_dimensions = game_state.get_dimensions();
+            if x == 0 && y == 0 {
+                neighbors = vec![
+                    game_state.get_cell_state(x + 1, y),
+                    game_state.get_cell_state(x, y + 1),
+                    game_state.get_cell_state(x + 1, y + 1)
+                ];
+            }
+
+            if x > 0 && x < (world_dimensions.0 - 1) && y == 0 {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y),
+                    game_state.get_cell_state(x + 1, y),
+                    game_state.get_cell_state(x - 1, y + 1),
+                    game_state.get_cell_state(x, y + 1),
+                    game_state.get_cell_state(x + 1, y + 1)
+                ];
+            }
+
+            if x == (world_dimensions.0 - 1) && y == 0 {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y),
+                    game_state.get_cell_state(x - 1, y + 1),
+                    game_state.get_cell_state(x, y + 1),
+                ];
+            }
+
+            if x == 0 && y > 0 && y < (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x + 1, y - 1),
+                    game_state.get_cell_state(x + 1, y),
+                    game_state.get_cell_state(x, y + 1),
+                    game_state.get_cell_state(x + 1, y + 1)
+                ];
+            }
+
+            if x > 0 && y > 0 && x < (world_dimensions.0 - 1) && y < (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y - 1),
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x + 1, y - 1),
+                    game_state.get_cell_state(x - 1, y),
+                    game_state.get_cell_state(x + 1, y),
+                    game_state.get_cell_state(x - 1, y + 1),
+                    game_state.get_cell_state(x, y + 1),
+                    game_state.get_cell_state(x + 1, y + 1)
+                ];
+            }
+
+            if x == (world_dimensions.0 - 1) && y > 0 && y < (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y - 1),
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x - 1, y),
+                    game_state.get_cell_state(x - 1, y + 1),
+                    game_state.get_cell_state(x, y + 1),
+                ];
+            }
+
+            if x == 0 && y == (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x + 1, y - 1),
+                    game_state.get_cell_state(x + 1, y)
+                ];
+            }
+
+            if x > 0 && x < (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y - 1),
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x + 1, y - 1),
+                    game_state.get_cell_state(x - 1, y),
+                    game_state.get_cell_state(x + 1, y)
+                ];
+            }
+
+            if x == (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
+                neighbors = vec![
+                    game_state.get_cell_state(x - 1, y - 1),
+                    game_state.get_cell_state(x, y - 1),
+                    game_state.get_cell_state(x - 1, y)
+                ];
+            }
+
+            for neighbor in neighbors {
+                if neighbor {
+                    live_neighbors += 1;
+                }
+            }
+        }
+
+        return live_neighbors;
     }
 }
 
@@ -68,9 +205,9 @@ pub struct GameState {
 }
 
 impl GameState {
-    pub fn set_live(&mut self, x: u8, y: u8) -> Result<(), GameError> {
+    pub fn set_cell_state(&mut self, x: usize, y: usize, state: bool) -> Result<(), GameError> {
         if self.coord_in_world(x, y) {
-            self.state[x as usize][y as usize] = true;
+            self.state[x][y] = state;
         }
         else {
             // return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", x, y))));
@@ -87,15 +224,15 @@ impl GameState {
         (world_x, world_y)
     }
 
-    pub fn get_cell_state(&self, x: u8, y: u8) -> bool {
-        self.state[x as usize][y as usize]
+    pub fn get_cell_state(&self, x: usize, y: usize) -> bool {
+        self.state[x][y]
     }
 
-    fn coord_in_world(&self, x: u8, y: u8) -> bool {
+    fn coord_in_world(&self, x: usize, y: usize) -> bool {
         let world_x = self.state[0].len();
         let world_y = self.state.len();
 
-        return x < world_x as u8 && y < world_y as u8;
+        return x < world_x && y < world_y;
     }
 }
 
@@ -113,7 +250,7 @@ impl GameStateBuilder {
 
             for i in 1..lines.len() {
                 let (live_cell_x, live_cell_y) = GameStateBuilder::parse_coordinate(lines[i])?;
-                game_state.set_live(live_cell_x, live_cell_y)?;
+                game_state.set_cell_state(live_cell_x, live_cell_y, true)?;
             }
 
             return Ok(game_state);
@@ -122,11 +259,11 @@ impl GameStateBuilder {
         Err(GameError::InvalidStateFile(String::from("Empty state file")))
     }
 
-    fn parse_coordinate(coord_str: &str) -> Result<(u8, u8), GameError> {
+    fn parse_coordinate(coord_str: &str) -> Result<(usize, usize), GameError> {
         let dimensions: Vec<&str> = coord_str.split(',').collect();
         if dimensions.len() != 2 { return Err(GameError::InvalidStateFile(String::from("Failed to parse dimensions."))) }
-        let x = u8::from_str(dimensions[0])?;
-        let y = u8::from_str(dimensions[1])?;
+        let x = usize::from_str(dimensions[0])?;
+        let y = usize::from_str(dimensions[1])?;
 
         Ok((x, y))
     }
