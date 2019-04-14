@@ -44,23 +44,23 @@ impl GameOfLife {
         let mut next_state_opt: Option<GameState> = None;
 
         if let Some(state) = &self.game_state {
-            self.iterations += 1;
-
             let world_dimensions = state.get_dimensions();
             let mut next_state = GameState{
-                state: vec![vec![false; world_dimensions.1]; world_dimensions.0]
+                state: vec![vec![false; world_dimensions.0]; world_dimensions.1]
             };
 
-            for i in 0..state.state.len() {
-                for j in 0..state.state[i].len() {
-                    let live_neighbors = self.get_number_of_live_neighbors(i, j);
+            for y in 0..state.state.len() {
+                for x in 0..state.state[y].len() {
+                    let live_neighbors = self.get_number_of_live_neighbors(x, y);
 
-                    if state.get_cell_state(i, j) {
+                    if state.get_cell_state(x, y) {
                         if live_neighbors < 2 || live_neighbors > 3 {
-                            next_state.set_cell_state(i, j, false);
+                            next_state.set_cell_state(x, y, false);
+                        } else {
+                            next_state.set_cell_state(x, y, true);
                         }
                     } else if live_neighbors == 3 {
-                        next_state.set_cell_state(i, j, true);
+                        next_state.set_cell_state(x, y, true);
                     }
                 }
             }
@@ -349,14 +349,14 @@ mod tests {
         {
             let state = gol.get_state().unwrap();
             assert!(state.get_cell_state(0,0));
-            assert!(state.get_cell_state(1,0));
             assert!(state.get_cell_state(1,1));
+            assert!(state.get_cell_state(2,2));
         }
         gol.update();
         {
             let state = gol.get_state().unwrap();
             assert!(!state.get_cell_state(0,0));
-            assert!(!state.get_cell_state(1,0));
+            assert!(!state.get_cell_state(2,2));
             assert!(state.get_cell_state(1,1));
         }
     }
