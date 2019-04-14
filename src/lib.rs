@@ -207,7 +207,7 @@ pub struct GameState {
 impl GameState {
     pub fn set_cell_state(&mut self, x: usize, y: usize, state: bool) -> Result<(), GameError> {
         if self.coord_in_world(x, y) {
-            self.state[x][y] = state;
+            self.state[y][x] = state;
         }
         else {
             // return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", x, y))));
@@ -225,7 +225,7 @@ impl GameState {
     }
 
     pub fn get_cell_state(&self, x: usize, y: usize) -> bool {
-        self.state[x][y]
+        self.state[y][x]
     }
 
     fn coord_in_world(&self, x: usize, y: usize) -> bool {
@@ -245,7 +245,7 @@ impl GameStateBuilder {
 
         if lines.len() > 0 {
             let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
-            let state: Vec<Vec<bool>> = vec![vec![false; y as usize]; x as usize];
+            let state: Vec<Vec<bool>> = vec![vec![false; x]; y];
             let mut game_state = GameState { state };
 
             for i in 1..lines.len() {
