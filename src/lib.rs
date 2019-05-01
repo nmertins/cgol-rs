@@ -2,6 +2,33 @@ use std::fs;
 use std::io;
 use std::str::FromStr;
 
+pub struct GameOfLifeSettings {
+    initial_state: GameState
+}
+
+impl GameOfLifeSettings {
+    pub fn new() -> GameOfLifeSettings {
+        let initial_state = GameState {
+            state: vec![vec![false, false, false],
+                        vec![false, false, false],
+                        vec![false, false, false]]
+        };
+
+        GameOfLifeSettings {
+            initial_state
+        }
+    }
+
+    pub fn from_file(file_path: &str) -> Result<GameOfLifeSettings, GameError> {
+        let initial_state = GameStateBuilder::from_file(file_path)?;
+        let settings = GameOfLifeSettings {
+            initial_state
+        };
+
+        Ok(settings)
+    }
+}
+
 pub struct GameOfLife {
     iterations: u32,
     game_state: Option<GameState>,
