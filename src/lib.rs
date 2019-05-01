@@ -31,14 +31,14 @@ impl GameOfLifeSettings {
 
 pub struct GameOfLife {
     iterations: u32,
-    game_state: Option<GameState>,
+    game_state: GameState,
 }
 
 impl GameOfLife {
-    pub fn new() -> GameOfLife {
+    pub fn new(settings: GameOfLifeSettings) -> GameOfLife {
         GameOfLife {
             iterations: 0,
-            game_state: None,
+            game_state: settings.initial_state,
         }
     }
 
@@ -46,17 +46,8 @@ impl GameOfLife {
         self.iterations
     }
 
-    pub fn set_state(&mut self, file_path: &str) -> Result<(), GameError> {
-        let state = GameStateBuilder::from_file(file_path)?;
-        self.game_state = Some(state);
-        Result::Ok(())
-    }
-
-    pub fn get_state(&self) -> Result<&GameState, GameError> {
-        match &self.game_state {
-            Some(state) => return Ok(state),
-            None => return Err(GameError::EmptyGameState)
-        }
+    pub fn get_state(&self) -> &GameState {
+        &self.game_state
     }
 
     pub fn update(&mut self) {
@@ -68,132 +59,124 @@ impl GameOfLife {
         // 3. Any live cell with more than 3 neighbors dies, as if by overpopulation
         // 4. Any dead cell with exactly 3 live neighbors becomes a live cell, as if by reproduction
 
-        let mut next_state_opt: Option<GameState> = None;
+        let world_dimensions = self.game_state.get_dimensions();
+        let mut next_state = GameState{
+            state: vec![vec![false; world_dimensions.0]; world_dimensions.1]
+        };
 
-        if let Some(state) = &self.game_state {
-            let world_dimensions = state.get_dimensions();
-            let mut next_state = GameState{
-                state: vec![vec![false; world_dimensions.0]; world_dimensions.1]
-            };
+        for y in 0..self.game_state.state.len() {
+            for x in 0..self.game_state.state[y].len() {
+                let live_neighbors = self.get_number_of_live_neighbors(x, y);
 
-            for y in 0..state.state.len() {
-                for x in 0..state.state[y].len() {
-                    let live_neighbors = self.get_number_of_live_neighbors(x, y);
-
-                    if state.get_cell_state(x, y) {
-                        if live_neighbors < 2 || live_neighbors > 3 {
-                            next_state.set_cell_state(x, y, false);
-                        } else {
-                            next_state.set_cell_state(x, y, true);
-                        }
-                    } else if live_neighbors == 3 {
+                if self.game_state.get_cell_state(x, y) {
+                    if live_neighbors < 2 || live_neighbors > 3 {
+                        next_state.set_cell_state(x, y, false);
+                    } else {
                         next_state.set_cell_state(x, y, true);
                     }
+                } else if live_neighbors == 3 {
+                    next_state.set_cell_state(x, y, true);
                 }
             }
-
-            next_state_opt = Some(next_state);
         }
 
-        self.game_state = next_state_opt;
+        self.game_state = next_state;
     }
 
     fn get_number_of_live_neighbors(&self, x: usize, y: usize) -> i32 {
         let mut live_neighbors = 0;
 
-        if let Some(game_state) = &self.game_state {
-            let mut neighbors = Vec::new();
+        let mut neighbors = Vec::new();
 
-            let world_dimensions = game_state.get_dimensions();
-            if x == 0 && y == 0 {
-                neighbors = vec![
-                    game_state.get_cell_state(x + 1, y),
-                    game_state.get_cell_state(x, y + 1),
-                    game_state.get_cell_state(x + 1, y + 1)
-                ];
-            }
+        let world_dimensions = self.game_state.get_dimensions();
+        if x == 0 && y == 0 {
+            neighbors = vec![
+                self.game_state.get_cell_state(x + 1, y),
+                self.game_state.get_cell_state(x, y + 1),
+                self.game_state.get_cell_state(x + 1, y + 1)
+            ];
+        }
 
-            if x > 0 && x < (world_dimensions.0 - 1) && y == 0 {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y),
-                    game_state.get_cell_state(x + 1, y),
-                    game_state.get_cell_state(x - 1, y + 1),
-                    game_state.get_cell_state(x, y + 1),
-                    game_state.get_cell_state(x + 1, y + 1)
-                ];
-            }
+        if x > 0 && x < (world_dimensions.0 - 1) && y == 0 {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y),
+                self.game_state.get_cell_state(x + 1, y),
+                self.game_state.get_cell_state(x - 1, y + 1),
+                self.game_state.get_cell_state(x, y + 1),
+                self.game_state.get_cell_state(x + 1, y + 1)
+            ];
+        }
 
-            if x == (world_dimensions.0 - 1) && y == 0 {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y),
-                    game_state.get_cell_state(x - 1, y + 1),
-                    game_state.get_cell_state(x, y + 1),
-                ];
-            }
+        if x == (world_dimensions.0 - 1) && y == 0 {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y),
+                self.game_state.get_cell_state(x - 1, y + 1),
+                self.game_state.get_cell_state(x, y + 1),
+            ];
+        }
 
-            if x == 0 && y > 0 && y < (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x + 1, y - 1),
-                    game_state.get_cell_state(x + 1, y),
-                    game_state.get_cell_state(x, y + 1),
-                    game_state.get_cell_state(x + 1, y + 1)
-                ];
-            }
+        if x == 0 && y > 0 && y < (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x + 1, y - 1),
+                self.game_state.get_cell_state(x + 1, y),
+                self.game_state.get_cell_state(x, y + 1),
+                self.game_state.get_cell_state(x + 1, y + 1)
+            ];
+        }
 
-            if x > 0 && y > 0 && x < (world_dimensions.0 - 1) && y < (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y - 1),
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x + 1, y - 1),
-                    game_state.get_cell_state(x - 1, y),
-                    game_state.get_cell_state(x + 1, y),
-                    game_state.get_cell_state(x - 1, y + 1),
-                    game_state.get_cell_state(x, y + 1),
-                    game_state.get_cell_state(x + 1, y + 1)
-                ];
-            }
+        if x > 0 && y > 0 && x < (world_dimensions.0 - 1) && y < (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y - 1),
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x + 1, y - 1),
+                self.game_state.get_cell_state(x - 1, y),
+                self.game_state.get_cell_state(x + 1, y),
+                self.game_state.get_cell_state(x - 1, y + 1),
+                self.game_state.get_cell_state(x, y + 1),
+                self.game_state.get_cell_state(x + 1, y + 1)
+            ];
+        }
 
-            if x == (world_dimensions.0 - 1) && y > 0 && y < (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y - 1),
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x - 1, y),
-                    game_state.get_cell_state(x - 1, y + 1),
-                    game_state.get_cell_state(x, y + 1),
-                ];
-            }
+        if x == (world_dimensions.0 - 1) && y > 0 && y < (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y - 1),
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x - 1, y),
+                self.game_state.get_cell_state(x - 1, y + 1),
+                self.game_state.get_cell_state(x, y + 1),
+            ];
+        }
 
-            if x == 0 && y == (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x + 1, y - 1),
-                    game_state.get_cell_state(x + 1, y)
-                ];
-            }
+        if x == 0 && y == (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x + 1, y - 1),
+                self.game_state.get_cell_state(x + 1, y)
+            ];
+        }
 
-            if x > 0 && x < (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y - 1),
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x + 1, y - 1),
-                    game_state.get_cell_state(x - 1, y),
-                    game_state.get_cell_state(x + 1, y)
-                ];
-            }
+        if x > 0 && x < (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y - 1),
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x + 1, y - 1),
+                self.game_state.get_cell_state(x - 1, y),
+                self.game_state.get_cell_state(x + 1, y)
+            ];
+        }
 
-            if x == (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
-                neighbors = vec![
-                    game_state.get_cell_state(x - 1, y - 1),
-                    game_state.get_cell_state(x, y - 1),
-                    game_state.get_cell_state(x - 1, y)
-                ];
-            }
+        if x == (world_dimensions.0 - 1) && y == (world_dimensions.1 - 1) {
+            neighbors = vec![
+                self.game_state.get_cell_state(x - 1, y - 1),
+                self.game_state.get_cell_state(x, y - 1),
+                self.game_state.get_cell_state(x - 1, y)
+            ];
+        }
 
-            for neighbor in neighbors {
-                if neighbor {
-                    live_neighbors += 1;
-                }
+        for neighbor in neighbors {
+            if neighbor {
+                live_neighbors += 1;
             }
         }
 
@@ -302,7 +285,8 @@ mod tests {
 
     #[test]
     fn test_update_increments_iterations() {
-        let mut gol = GameOfLife::new();
+        let settings = GameOfLifeSettings::new();
+        let mut gol = GameOfLife::new(settings);
         assert_eq!(gol.iterations, 0);
 
         gol.update();
@@ -351,37 +335,38 @@ mod tests {
 
     #[test]
     fn test_single_live_cell_dies() {
-        let mut gol = GameOfLife::new();
-        if let Err(game_error) = gol.set_state("resources/test_states/single_live_cell.state") {
+        let settings_result = GameOfLifeSettings::from_file("resources/test_states/single_live_cell.state");
+        if let Err(settings) = settings_result {
             panic!("resources/test_states/single_live_cell.state should be a valid state");
         }
+        let mut gol = GameOfLife::new(settings_result.unwrap());
         {
-            let state = gol.get_state().unwrap();
+            let state = gol.get_state();
             assert!(state.get_cell_state(1, 1));
         }
         gol.update();
         {
-            let state = gol.get_state().unwrap();
+            let state = gol.get_state();
             assert!(!state.get_cell_state(1, 1));
         }
     }
 
     #[test]
     fn test_cell_with_two_neighbors_lives() {
-        let mut gol = GameOfLife::new();
-
-        if let Err(game_error) = gol.set_state("resources/test_states/cell_with_two_neighbors.state") {
+        let settings_result = GameOfLifeSettings::from_file("resources/test_states/cell_with_two_neighbors.state");
+        if let Err(settings) = settings_result {
             panic!("resources/test_states/cell_with_two_neighbors.state should be a valid state");
         }
+        let mut gol = GameOfLife::new(settings_result.unwrap());
         {
-            let state = gol.get_state().unwrap();
+            let state = gol.get_state();
             assert!(state.get_cell_state(0,0));
             assert!(state.get_cell_state(1,1));
             assert!(state.get_cell_state(2,2));
         }
         gol.update();
         {
-            let state = gol.get_state().unwrap();
+            let state = gol.get_state();
             assert!(!state.get_cell_state(0,0));
             assert!(!state.get_cell_state(2,2));
             assert!(state.get_cell_state(1,1));
