@@ -400,8 +400,10 @@ mod tests {
         let settings = GameOfLifeSettings::new();
         assert_eq!((3, 3), settings.get_dimensions());
         let settings = settings.set_dimensions(10, 10);
-        assert_eq!((10, 10), settings.get_dimensions())
+        assert_eq!((10, 10), settings.get_dimensions());
 
-        // TODO: test setting live cells
+        let settings = settings.set_live_cell(5, 5);
+        let gol = GameOfLife::new(settings);
+        assert!(gol.get_state().get_cell_state(5, 5));
     }
 }
