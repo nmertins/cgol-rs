@@ -27,6 +27,27 @@ impl GameOfLifeSettings {
 
         Ok(settings)
     }
+
+    pub fn get_dimensions(&self) -> (usize, usize) {
+        self.initial_state.get_dimensions()
+    }
+
+    pub fn set_dimensions(mut self, x: usize, y: usize) -> Self {
+        self.initial_state = GameState {
+            state: vec![vec![false; x]; y]
+        };
+
+        self
+    }
+
+    pub fn set_live_cell(mut self, x: usize, y: usize) -> Self {
+        match self.initial_state.set_cell_state(x, y, true) {
+            Ok(_) => {},
+            Err(err) => println!(err),
+        }
+
+        self
+    }
 }
 
 pub struct GameOfLife {
@@ -186,6 +207,7 @@ impl GameOfLife {
 
 pub enum GameError {
     InvalidStateFile(String),
+    InvalidWorldCoordinates(String),
     EmptyGameState
 }
 
@@ -205,6 +227,7 @@ impl std::fmt::Debug for GameError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             GameError::InvalidStateFile(message) => write!(f, "InvalidStateFile error: {}", message),
+            GameError::InvalidWorldCoordinates(message) => write!(f, "InvalidWorldCoordinates error: {}", message),
             GameError::EmptyGameState => write!(f, "EmptyGameState error")
         }
     }
@@ -220,8 +243,7 @@ impl GameState {
             self.state[y][x] = state;
         }
         else {
-            // return Err(GameError::InvalidStateFile(String::from(format!("Cell outside World: ({}, {})", x, y))));
-            // just ignore cells outside the world
+            return Err(GameError::InvalidWorldCoordinates(String::from(format!("Cell outside World: ({}, {})", x, y))));
         }
 
         return Ok(());
