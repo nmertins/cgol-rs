@@ -43,7 +43,7 @@ impl GameOfLifeSettings {
     pub fn set_live_cell(mut self, x: usize, y: usize) -> Self {
         match self.initial_state.set_cell_state(x, y, true) {
             Ok(_) => {},
-            Err(err) => println!(err),
+            Err(err) => println!("{:?}", err),
         }
 
         self
@@ -393,5 +393,15 @@ mod tests {
             assert!(!state.get_cell_state(2,2));
             assert!(state.get_cell_state(1,1));
         }
+    }
+
+    #[test]
+    fn test_setting_initial_game_state_programmatically() {
+        let settings = GameOfLifeSettings::new();
+        assert_eq!((3, 3), settings.get_dimensions());
+        let settings = settings.set_dimensions(10, 10);
+        assert_eq!((10, 10), settings.get_dimensions())
+
+        // TODO: test setting live cells
     }
 }
