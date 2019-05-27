@@ -317,7 +317,8 @@ mod tests {
 
     #[test]
     fn test_state_file_format() {
-        let valid_state_result = GameStateBuilder::from_file("resources/test_states/valid_test.state");
+        let test_file_path = "resources/test_states/valid_test.state";
+        let valid_state_result = GameStateBuilder::from_file(&test_file_path);
         match valid_state_result {
             Ok(valid_state) => {
                 let size = valid_state.get_dimensions();
@@ -338,7 +339,7 @@ mod tests {
             },
             Err(error) => {
                 match error {
-                    GameError::InvalidStateFile(message) => assert!(false, format!("Error reading state file resources/valid_test.state: {}", message)),
+                    GameError::InvalidStateFile(message) => assert!(false, format!("Error reading state file {}: {}", test_file_path, message)),
                     _ => assert!(false, "Why is GameState::from_file returning an error besides InvalidStateFile error??")
                 }
 
