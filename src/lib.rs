@@ -273,22 +273,27 @@ struct GameStateBuilder;
 impl GameStateBuilder {
     fn from_file(file_path: &str) -> Result<GameState, GameError> {
         let contents = fs::read_to_string(file_path)?;
-        let lines: Vec<&str> = contents.split('\n').collect();
+        let mut lines = contents.lines();
+        let mut game_state: Option<GameState> = None;
 
-        if lines.len() > 0 {
-            let (x, y) = GameStateBuilder::parse_coordinate(lines[0])?;
+        let first_line = lines.next();
+        if let Some(line) = first_line {
+            let (x, y) = GameStateBuilder::parse_coordinate(line)?;
             let state: Vec<Vec<bool>> = vec![vec![false; x]; y];
-            let mut game_state = GameState { state };
-
-            for i in 1..lines.len() {
-                let (live_cell_x, live_cell_y) = GameStateBuilder::parse_coordinate(lines[i])?;
-                game_state.set_cell_state(live_cell_x, live_cell_y, true)?;
-            }
-
-            return Ok(game_state);
+            game_state = Some(GameState { state });
         }
 
-        Err(GameError::InvalidStateFile(String::from("Empty state file")))
+        match game_state {
+            None => { return Err(GameError::InvalidStateFile(String::from("Empty state file"))) },
+            Some(mut game_state) => {
+                for line in lines {
+                    let (live_cell_x, live_cell_y) = GameStateBuilder::parse_coordinate(line)?;
+                    game_state.set_cell_state(live_cell_x, live_cell_y, true)?;
+                }
+
+                Ok(game_state)
+            },
+        }
     }
 
     fn parse_coordinate(coord_str: &str) -> Result<(usize, usize), GameError> {
